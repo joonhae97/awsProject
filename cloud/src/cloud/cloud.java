@@ -13,6 +13,7 @@ import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.RebootInstancesRequest;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StartInstancesResult;
@@ -82,6 +83,8 @@ public class cloud {
 				startInstance();
 			case 5:
 				stopInstance();
+			case 7:
+				rebootInstance();
 			}
 	}
 	
@@ -161,5 +164,29 @@ public class cloud {
         result=sirs.getStoppingInstances().get(0).getCurrentState().getName() ;
 
     	System.out.println("Successfully stop instance "+result);
+	}
+	
+	
+	public static void rebootInstance() {
+        String result = null;
+        String instance= null;
+		ArrayList<String> instanceId = new ArrayList<>();
+		RebootInstancesRequest rebootRequest = new RebootInstancesRequest();
+		System.out.println("Enter insatnce id : ");
+
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	        instance = br.readLine();
+			instanceId.add(instance);
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		rebootRequest.setInstanceIds(instanceId);
+		rebootRequest.withInstanceIds(instanceId);
+		rebootRequest.withInstanceIds(instance);
+    	System.out.println("Rebooting... " + instance);
+		ec2.rebootInstances(rebootRequest);
+    	System.out.println("Successfully rebooted instance " + instance);
 	}
 }
