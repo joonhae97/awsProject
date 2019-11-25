@@ -6,6 +6,10 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
+import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.Reservation;
 
 public class cloud {
 	/*
@@ -61,5 +65,41 @@ public class cloud {
 			System.out.println("------------------------------------------------------------");
 			System.out.print("Enter an integer: ");
 		//}
+			number = menu.nextInt();
+			switch(number) {
+			case 1:
+				listInstances();
+				break;
+			}
+	}
+	
+	public static void listInstances()
+	{
+		System.out.println("Listing instances....");
+		boolean done = false;
+		DescribeInstancesRequest request = new DescribeInstancesRequest();
+		while(!done) {
+			DescribeInstancesResult response = ec2.describeInstances(request);
+			for(Reservation reservation : response.getReservations()) {
+				for(Instance instance : reservation.getInstances()) {
+					System.out.printf(
+					"[id] %s, " +
+					"[AMI] %s, " +
+					"[type] %s, " +
+					"[state] %10s, " +
+					"[monitoring state] %s",
+					instance.getInstanceId(),
+					instance.getImageId(),
+					instance.getInstanceType(),
+					instance.getState().getName(),
+					instance.getMonitoring().getState());
+				}
+				System.out.println();
+				}
+				request.setNextToken(response.getNextToken());
+				if(response.getNextToken() == null) {
+					done = true;
+			}
+		}
 	}
 }
