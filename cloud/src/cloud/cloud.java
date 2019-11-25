@@ -1,5 +1,9 @@
 package cloud;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import com.amazonaws.AmazonClientException;
@@ -10,6 +14,10 @@ import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.services.ec2.model.StartInstancesRequest;
+import com.amazonaws.services.ec2.model.StartInstancesResult;
+import com.amazonaws.services.ec2.model.StopInstancesRequest;
+import com.amazonaws.services.ec2.model.StopInstancesResult;
 
 public class cloud {
 	/*
@@ -70,6 +78,10 @@ public class cloud {
 			case 1:
 				listInstances();
 				break;
+			case 3:
+				startInstance();
+			case 5:
+				stopInstance();
 			}
 	}
 	
@@ -101,5 +113,53 @@ public class cloud {
 					done = true;
 			}
 		}
+	}
+	
+	public static void startInstance() {
+		
+		String result = null;
+		StartInstancesRequest startRequest = new StartInstancesRequest();
+        ArrayList<String> instanceId = new ArrayList<>();
+        System.out.println("Enter insatnce id : ");
+
+        try {
+	        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	        String instance;
+	        instance = br.readLine();
+			instanceId.add(instance);
+        }catch(IOException e) {
+        	System.out.println("wrong input");
+        }
+        
+		startRequest.setInstanceIds(instanceId);
+		StartInstancesResult sirs = ec2.startInstances(startRequest);
+    	System.out.println("Starting... "+result);
+
+    	result = sirs.getStartingInstances().get(0).getCurrentState().getName();
+    	System.out.println("Successfully started instancen "+result);
+
+	}
+	
+	public static void stopInstance() {
+        String result = null;
+		ArrayList<String> instanceId = new ArrayList<>();
+		StopInstancesRequest stopRequest = new StopInstancesRequest();
+		System.out.println("Enter insatnce id : ");
+
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	        String instance;
+	        instance = br.readLine();
+			instanceId.add(instance);
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		stopRequest.setInstanceIds(instanceId);
+        StopInstancesResult sirs = ec2.stopInstances(stopRequest);
+
+        result=sirs.getStoppingInstances().get(0).getCurrentState().getName() ;
+
+    	System.out.println("Successfully stop instance "+result);
 	}
 }
