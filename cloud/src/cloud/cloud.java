@@ -4,15 +4,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Scanner;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
-import com.amazonaws.services.ec2.model.CreateTagsRequest;
+import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.InstanceType;
 import com.amazonaws.services.ec2.model.RebootInstancesRequest;
@@ -23,8 +25,6 @@ import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StartInstancesResult;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesResult;
-import com.amazonaws.services.ec2.model.Tag;
-import com.amazonaws.services.redshift.model.CreateTagsResult;
 
 public class cloud {
 	/*
@@ -92,6 +92,8 @@ public class cloud {
 				createInstance();
 			case 7:
 				rebootInstance();
+			case 8:
+				listImages();
 			}
 	}
 	
@@ -220,5 +222,20 @@ public class cloud {
 		System.out.printf(
 	        "Successfully started EC2 instance %s based on AMI %s",
 	            reservation_id, img);
+	}
+	
+	public static void listImages() {
+		//Preconditions.checkNotNull(credentialsAsStream, "File 'AwsCredentials.properties' NOT found in the classpath");
+		DescribeImagesRequest request = new DescribeImagesRequest();
+		
+		request.withOwners("self");
+		System.out.println("list of AMIs");
+		Collection<Image> images = ec2.describeImages(request).getImages();
+		for (Image tmp:images) {
+	        String id = tmp.getImageId();
+	        String name = tmp.getName();
+	        String hyp = tmp.getHypervisor();
+			System.out.println("Ami-id: "+id+" || Hypervisor: "+hyp+" || Name: "+name);
+		}
 	}
 }
