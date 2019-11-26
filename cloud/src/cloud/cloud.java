@@ -10,15 +10,21 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
+import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.InstanceType;
 import com.amazonaws.services.ec2.model.RebootInstancesRequest;
 import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.services.ec2.model.RunInstancesRequest;
+import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StartInstancesResult;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesResult;
+import com.amazonaws.services.ec2.model.Tag;
+import com.amazonaws.services.redshift.model.CreateTagsResult;
 
 public class cloud {
 	/*
@@ -78,11 +84,12 @@ public class cloud {
 			switch(number) {
 			case 1:
 				listInstances();
-				break;
 			case 3:
 				startInstance();
 			case 5:
 				stopInstance();
+			case 6:
+				createInstance();
 			case 7:
 				rebootInstance();
 			}
@@ -168,7 +175,6 @@ public class cloud {
 	
 	
 	public static void rebootInstance() {
-        String result = null;
         String instance= null;
 		ArrayList<String> instanceId = new ArrayList<>();
 		RebootInstancesRequest rebootRequest = new RebootInstancesRequest();
@@ -188,5 +194,31 @@ public class cloud {
     	System.out.println("Rebooting... " + instance);
 		ec2.rebootInstances(rebootRequest);
     	System.out.println("Successfully rebooted instance " + instance);
+	}
+	
+	public static void createInstance() {
+		String img = null;
+		System.out.println("Enter ami id : ");
+
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			img = br.readLine();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		RunInstancesRequest run_request = new RunInstancesRequest()
+			    .withImageId(img)
+			    .withInstanceType(InstanceType.T2Micro)
+			    .withMaxCount(1)
+			    .withMinCount(1);
+
+		RunInstancesResult run_response = ec2.runInstances(run_request);
+
+		String reservation_id = run_response.getReservation().getInstances().get(0).getInstanceId();
+	    
+		System.out.printf(
+	        "Successfully started EC2 instance %s based on AMI %s",
+	            reservation_id, img);
 	}
 }
