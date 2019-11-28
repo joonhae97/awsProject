@@ -12,6 +12,8 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.AvailabilityZone;
+import com.amazonaws.services.ec2.model.CreateImageRequest;
+import com.amazonaws.services.ec2.model.CreateImageResult;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
@@ -29,6 +31,7 @@ import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StartInstancesResult;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesResult;
+import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 
 public class cloud {
 	/*
@@ -67,8 +70,8 @@ public class cloud {
 		Scanner menu = new Scanner(System.in);
 		Scanner id_string = new Scanner(System.in);
 		int number = 0;
-		//while(true)
-		//{
+		while(true)
+		{
 			System.out.println(" ");
 			System.out.println(" ");
 			System.out.println("------------------------------------------------------------");
@@ -81,29 +84,50 @@ public class cloud {
 			System.out.println(" 3. start instance 4. available regions ");
 			System.out.println(" 5. stop instance 6. create instance ");
 			System.out.println(" 7. reboot instance 8. list images ");
+			System.out.println(" 9. create image 10. terminate instance");
+
 			System.out.println(" 99. quit ");
 			System.out.println("------------------------------------------------------------");
 			System.out.print("Enter an integer: ");
-		//}
+		
 			number = menu.nextInt();
 			switch(number) {
 			case 1:
 				listInstances();
+				break;
 			case 2:
 				availableZones();
+				break;
 			case 3:
 				startInstance();
+				break;
 			case 4:
 				availableRegions();
+				break;
 			case 5:
 				stopInstance();
+				break;
 			case 6:
 				createInstance();
+				break;
 			case 7:
 				rebootInstance();
+				break;
 			case 8:
 				listImages();
+				break;
+			case 9:
+				createImage();
+				break;
+			case 10:
+				terminateInstance();
+				break;
+			case 99:
+				break;
 			}
+			
+		}
+			
 	}
 	
 	public static void listInstances()
@@ -272,6 +296,77 @@ public class cloud {
 	        String name = tmp.getName();
 	        String hyp = tmp.getHypervisor();
 			System.out.println("Ami-id: "+id+" || Hypervisor: "+hyp+" || Name: "+name);
+		}
+	}
+	
+	public static void createImage() {
+		Boolean noReboot = true; // set this to false if you want to shutdown the instance and tehn create an AMI.
+		String instanceId = null;
+		String aminame = null;
+		System.out.println("enter the Instance-id for which you would like to create an AMI");
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		try {
+			instanceId = br.readLine();
+			System.out.println(" instance entered is: "+instanceId);
+			//instanceid.add(instanceId);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Enter the name of the AMI");
+		BufferedReader name = new BufferedReader(new InputStreamReader(System.in));
+		try {
+			aminame = name.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		CreateImageRequest AMI = new CreateImageRequest()
+					.withName(aminame)
+					.withDescription("test creation using java api")
+					//.withRootDeviceName("/dev/sda1")
+					.withNoReboot(noReboot)
+					.withInstanceId(instanceId);
+		try{
+		ec2.createImage(AMI);
+		CreateImageResult Ami = new CreateImageResult();
+		String Imgid = Ami.getImageId();
+		int Hscode = Ami.hashCode();
+		Imgid = Ami.getImageId();
+		System.out.println("Ami is being created ");
+		//System.out.println("Last line "+Ami.getImageId()+"hashcode "+Hscode);
+		}catch(Exception a){
+			System.out.println("Wrong input");
+		}
+		System.out.println("Successfully AMI is created.");
+	}
+	
+	public static void terminateInstance() {
+		TerminateInstancesRequest tir = new TerminateInstancesRequest();
+		String instanceId = null;
+		ArrayList<String> instanceIds = new ArrayList<>();
+
+		System.out.println("Enter the instance id to be terminated (Ex:i-3c8b3908)");
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		try {
+			instanceId = br.readLine();
+			System.out.println(" instance entered is: "+instanceId);
+			try{
+				instanceIds.add(instanceId);
+			}catch (Exception e){
+				System.out.println("you have entered a wrong instance id");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try{
+		tir.setInstanceIds(instanceIds);
+		ec2.terminateInstances(tir); System.out.println("termianting reqstd.");
+		System.out.println("The requested instance " + instanceId +" has been terminated");
+		}catch (Exception a){
+			System.out.println("You have entered a wrong instance-id");
 		}
 	}
 }
