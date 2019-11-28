@@ -11,13 +11,17 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
+import com.amazonaws.services.ec2.model.AvailabilityZone;
+import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.DescribeRegionsResult;
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.InstanceType;
 import com.amazonaws.services.ec2.model.RebootInstancesRequest;
+import com.amazonaws.services.ec2.model.Region;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
@@ -33,6 +37,7 @@ public class cloud {
 	* Chungbuk National University
 	*/
 	static AmazonEC2 ec2;
+
 	private static void init() throws Exception {
 	/*
 	* The ProfileCredentialsProvider will return your [default]
@@ -84,8 +89,12 @@ public class cloud {
 			switch(number) {
 			case 1:
 				listInstances();
+			case 2:
+				availableZones();
 			case 3:
 				startInstance();
+			case 4:
+				availableRegions();
 			case 5:
 				stopInstance();
 			case 6:
@@ -127,6 +136,20 @@ public class cloud {
 		}
 	}
 	
+	public static void availableZones() {
+		DescribeAvailabilityZonesResult zones_response = ec2.describeAvailabilityZones();
+
+		for(AvailabilityZone zone : zones_response.getAvailabilityZones()) {
+		    System.out.printf(
+		        "Found availability zone %s " +
+		        "with status %s " +
+		        "in region %s",
+		        zone.getZoneName(),
+		        zone.getState(),
+		        zone.getRegionName());
+		}
+	}
+	
 	public static void startInstance() {
 		
 		String result = null;
@@ -150,6 +173,19 @@ public class cloud {
     	result = sirs.getStartingInstances().get(0).getCurrentState().getName();
     	System.out.println("Successfully started instancen "+result);
 
+	}
+	
+	public static void availableRegions() {
+		String result = null;
+		DescribeRegionsResult regions_response = ec2.describeRegions();
+
+		for(Region region : regions_response.getRegions()) {
+		    System.out.printf(
+		        "Found region %s " +
+		        "with endpoint %s",
+		        region.getRegionName(),
+		        region.getEndpoint());
+		}
 	}
 	
 	public static void stopInstance() {
