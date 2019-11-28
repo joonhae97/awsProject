@@ -35,9 +35,9 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 
 public class cloud {
 	/*
-	* Cloud Computing, Data Computing Laboratory
-	* Department of Computer Science
-	* Chungbuk National University
+	* 2019-Cloud Computing Term Project
+	* Dynamic Virtual Resource Management Program
+	* Software department 2017038065 황준해
 	*/
 	static AmazonEC2 ec2;
 
@@ -53,7 +53,6 @@ public class cloud {
 			credentialsProvider.getCredentials();
 		} catch (Exception e) {
 		throw new AmazonClientException(
-				
 			"Cannot load the credentials from the credential profiles file. " +
 			"Please make sure that your credentials file is at the correct " +
 			"location (~/.aws/credentials), and is in valid format.",e);
@@ -70,7 +69,8 @@ public class cloud {
 		Scanner menu = new Scanner(System.in);
 		Scanner id_string = new Scanner(System.in);
 		int number = 0;
-		while(true)
+		boolean exit = true;
+		while(exit)
 		{
 			System.out.println(" ");
 			System.out.println(" ");
@@ -79,55 +79,58 @@ public class cloud {
 			System.out.println(" ");
 			System.out.println(" Cloud Computing, Computer Science Department ");
 			System.out.println(" at Chungbuk National University ");
+			System.out.println(" 2017038065 황준해 ");
 			System.out.println("------------------------------------------------------------");
 			System.out.println(" 1. list instance 2. available zones ");
 			System.out.println(" 3. start instance 4. available regions ");
 			System.out.println(" 5. stop instance 6. create instance ");
 			System.out.println(" 7. reboot instance 8. list images ");
 			System.out.println(" 9. create image 10. terminate instance");
-
+			System.out.println(" 11. list running instances");
 			System.out.println(" 99. quit ");
 			System.out.println("------------------------------------------------------------");
 			System.out.print("Enter an integer: ");
 		
 			number = menu.nextInt();
 			switch(number) {
-			case 1:
-				listInstances();
-				break;
-			case 2:
-				availableZones();
-				break;
-			case 3:
-				startInstance();
-				break;
-			case 4:
-				availableRegions();
-				break;
-			case 5:
-				stopInstance();
-				break;
-			case 6:
-				createInstance();
-				break;
-			case 7:
-				rebootInstance();
-				break;
-			case 8:
-				listImages();
-				break;
-			case 9:
-				createImage();
-				break;
-			case 10:
-				terminateInstance();
-				break;
-			case 99:
-				break;
+				case 1:
+					listInstances();
+					break;
+				case 2:
+					availableZones();
+					break;
+				case 3:
+					startInstance();
+					break;
+				case 4:
+					availableRegions();
+					break;
+				case 5:
+					stopInstance();
+					break;
+				case 6:
+					createInstance();
+					break;
+				case 7:
+					rebootInstance();
+					break;
+				case 8:
+					listImages();
+					break;
+				case 9:
+					createImage();
+					break;
+				case 10:
+					terminateInstance();
+					break;
+				case 11:
+					listRunningInstance();
+					break;
+				case 99:
+					exit = false;
+					break;
 			}
-			
 		}
-			
 	}
 	
 	public static void listInstances()
@@ -367,6 +370,36 @@ public class cloud {
 		System.out.println("The requested instance " + instanceId +" has been terminated");
 		}catch (Exception a){
 			System.out.println("You have entered a wrong instance-id");
+		}
+	}
+	
+	public static void listRunningInstance() {
+		System.out.println("Listing Running instances....");
+		boolean done = false;
+		DescribeInstancesRequest request = new DescribeInstancesRequest();
+		while(!done) {
+			DescribeInstancesResult response = ec2.describeInstances(request);
+			for(Reservation reservation : response.getReservations()) {
+				for(Instance instance : reservation.getInstances()) {
+					if(instance.getState().getName().equals("running"))
+						System.out.printf(
+						"[id] %s, " +
+						"[AMI] %s, " +
+						"[type] %s, " +
+						"[state] %10s, " +
+						"[monitoring state] %s",
+						instance.getInstanceId(),
+						instance.getImageId(),
+						instance.getInstanceType(),
+						instance.getState().getName(),
+						instance.getMonitoring().getState());
+				}
+				System.out.println();
+				}
+				request.setNextToken(response.getNextToken());
+				if(response.getNextToken() == null) {
+					done = true;
+			}
 		}
 	}
 }
